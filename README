@@ -1,22 +1,60 @@
-This is a simple dataset of North American (though mostly U.S.) major roads.
+# Road trip!
 
-city-gps.txt contains one line per city, with three fields per line, 
-delimited by spaces. The first field is the city, followed by the latitude,
-followed by the longitude.
+Besides baseball, McDonald’s, and reality TV, few things are as canonically American as hopping in the car for an old-fashioned road trip. We’ve prepared a dataset of major highway segments of the United States (and parts of southern Canada and northern Mexico), including highway names, distances, and speed limits; you can visualize this as a graph with nodes as towns and highway segments as edges. We’ve also prepared a dataset of cities and towns with corresponding latitude-longitude positions. These files should be in the GitHub repo you cloned in step 0. Your job is to implement algorithms that find good driving directions between pairs of cities given by the user. Your program should be run on the command line like this:
 
-road-segments.txt has one line per road segment connecting two cities.
-The space delimited fields are:
+```
+./route.py [start-city] [end-city] [cost-function]
+where:
+• start-city and end-city are the cities we need a route between. 
+• cost-function is one of:
+  – segments tries to find a route with the fewest number of “turns” (i.e. edges of the graph)
+  – distance tries to find a route with the shortest total distance
+  – time tries to find the fastest route, for a car that always travels at the speed limit
+  – mpg tries to find the most economical route, for a car that always travels at the speed limit and
+  whose mileage per gallon (MPG) is a function of its velocity (in miles per hour), as follows:
+  MPG(v)=400*v/150*(1− v/150)^4
 
-- first city
-- second city
-- length (in miles)
-- speed limit (in miles per hour)
-- name of highway
+```
 
+The output of your program should be a nicely-formatted, human-readable list of directions, including travel times, distances, intermediate cities, and highway names, similar to what Google Maps or another site might produce. In addition, the last line of output should have the following machine-readable output about the route your code found:
+[total-segments] [total-miles] [total-hours] [total-gas-gallons] [start-city] [city-1] [city-2] ... [end-city]
 
-Note that there are mistakes and bugs in these files and your code should
-still operate correctly; e.g. not all cities that appear in road-segments.txt
-have a corresponding line in city-gps.txt. You should assume that all roads
-in road-segments.txt are bidirectional, i.e. none are one-way roads, so
-that it's possible to travel from the first city to the second city at the
-same distance at speed as from the second city to the first city.
+## Solution
+
+We wanted to use Lattitude and Longitude as the heuristic function for the distance optimization, but there were missing co-ordinates, taking the median for the missing co-ordinates didnt give us the right answer. Hence we did not go with A* search for this problem. We just used Heapq to optimize based on the input given.
+
+### Algorithm
+
+```
+1. If GOAL?(initial-state) then return initial-state
+2. INSERT(initial-node, FRINGE)
+3. INSERT(initial-node, VISITED)
+4. Repeat:
+5.  If empty(FRINGE) then return failure
+6.    s = REMOVE(FRINGE)
+7.    If GOAL?(s) then return s and/or path
+8.    For every state s’ in SUCC(s):
+9.      INSERT(s’, FRINGE)
+10.     INSERT(s', Visited)
+
+```
+
+```
+States: Any arrangement of numbers from 0 to 15
+
+Initial state S0: Given Start city
+
+Successor function: Cities connected to the next city based on the cost function provided (distance, mpg, time or segments)
+
+Goal state: Given End city
+
+Cost function: Distance, mpg, time or segments
+
+```
+
+**Sample Output**
+
+```
+./route.py Indianapolis,_Indiana Bloomington,_Indiana mpg
+3 51 1.079500 1.955200 Indianapolis,_Indiana Jct_I-465_&_IN_37_S,_Indiana Martinsville,_Indiana Bloomington,_Indiana
+```
